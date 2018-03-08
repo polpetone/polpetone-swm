@@ -1,0 +1,96 @@
+#!/bin/python3
+import argparse 
+import subprocess
+import yaml
+import os
+import tempfile
+
+
+HOME=os.getenv("HOME")
+CONFIG_FOLDER=HOME+"/.polpetone-swm"
+CONFIG=CONFIG_FOLDER+'/config.yml'
+INITIAL_CONFIG = "webpages: "+CONFIG_FOLDER+"/webpages.yml \n" +\
+                 "browser: firefox"
+INITIAL_WEBPAGES =  "github:\n" +\
+                    "   - https://github.com\n" +\
+                    "   - https://github.com/polpetone\n" +\
+                    "google: https://google.de"
+
+def open_text_editor(file_to_edit):
+    EDITOR = os.environ.get('EDITOR','vim')
+    
+    with open(file_to_edit) as f:
+        initial_text = f.read()
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='temp') as temp:
+        temp.write(initial_text)
+        temp.flush()
+        subprocess.call([EDITOR, temp.name])
+        text = open(temp.name, 'r').read()
+
+    with open(file_to_edit, mode = 'w') as f:
+        f.write(text)
+
+def read_pages(pages_file):
+    with open(pages_file) as f:
+        pages = yaml.load(f)
+    return pages
+
+def read_config(config_file):
+    with open(config_file) as f:
+        config = yaml.load(f) 
+    return config
+
+def create_config_if_not_exists():
+    if not os.path.exists(CONFIG_FOLDER):
+        os.makedirs(CONFIG_FOLDER)
+        with open(CONFIG,'w') as f:
+            f.write(INITIAL_CONFIG)
+        with open(CONFIG_FOLDER+"/webpages.yml",'w') as f:
+            f.write(INITIAL_WEBPAGES)
+
+
+if __name__ == "__main__": 
+    create_config_if_not_exists()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--page', default="")
+    parser.add_argument('-a', '--add', action='store_true')
+    args = parser.parse_args()
+
+    config = read_config(CONFIG)
+    
+    browser = config['browser']
+    cmd = browser + " "
+    web_pages_file = config['webpages']
+    pages = read_pages(web_pages_file)
+   
+    if args.add is True:
+       open_text_editor(web_pages_file) 
+    else:
+        if args.page is "":
+            for k in pages.keys():
+                print(k)
+        else:
+            if args.page in pages.keys():
+                value = pages.get(args.page)
+                if type(value) is list:
+                    for page in value:
+                        cmd += page
+                        cmd += " "
+                else: 
+                    cmd += value
+
+            else:
+                query = args.page.replace(" ", "+")
+                cmd += "https://duckduckgo.com/?q="+query
+                cmd += " "
+                cmd += "https://www.google.de/search?q="+query
+
+            process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+    
+
+
+
+
+
