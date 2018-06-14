@@ -54,7 +54,7 @@ if __name__ == "__main__":
     create_config_if_not_exists()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('query')
+    parser.add_argument('query', nargs='+')
     parser.add_argument('-a', '--add', action='store_true')
     args = parser.parse_args()
 
@@ -68,12 +68,12 @@ if __name__ == "__main__":
     if args.add is True:
        open_text_editor(web_pages_file) 
     else:
-        if args.query is "":
+        if len(args.query) == 0:
             for k in pages.keys():
                 print(k)
         else:
-            if args.query in pages.keys():
-                value = pages.get(args.query)
+            if args.query[0] in pages.keys():
+                value = pages.get(args.query[0])
                 if type(value) is list:
                     for query in value:
                         cmd += query
@@ -82,10 +82,10 @@ if __name__ == "__main__":
                     cmd += value
 
             else:
-                query = args.query.replace(" ", "+")
-                cmd += "https://duckduckgo.com/?q="+query
+                search_query = "+".join(str(x) for x in args.query)
+                cmd += "https://duckduckgo.com/?q="+search_query
                 cmd += " "
-                cmd += "https://www.google.de/search?q="+query
+                cmd += "https://www.google.de/search?q="+search_query
 
             process = subprocess.Popen(cmd.split(), stdout=None)
     
