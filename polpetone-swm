@@ -17,21 +17,6 @@ INITIAL_WEBPAGES =  "github:\n" +\
                     "   - https://github.com/polpetone\n" +\
                     "google: https://google.de"
 
-def open_text_editor(file_to_edit):
-    EDITOR = os.environ.get('EDITOR','vim')
-    
-    with open(file_to_edit) as f:
-        initial_text = f.read()
-
-    with tempfile.NamedTemporaryFile(mode='w', suffix='temp') as temp:
-        temp.write(initial_text)
-        temp.flush()
-        subprocess.call([EDITOR, temp.name])
-        text = open(temp.name, 'r').read()
-
-    with open(file_to_edit, mode = 'w') as f:
-        f.write(text)
-
 def read_pages(pages_file):
     with open(pages_file) as f:
         pages = yaml.load(f)
@@ -56,7 +41,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('query', nargs='+')
-    parser.add_argument('-a', '--add', action='store_true')
     args = parser.parse_args()
 
     config = read_config(CONFIG)
@@ -65,31 +49,28 @@ if __name__ == "__main__":
     cmd = browser + " "
     web_pages_file = config['webpages']
     pages = read_pages(web_pages_file)
-   
-    if args.add is True:
-       open_text_editor(web_pages_file) 
+
+    if len(args.query) == 0:
+        for k in pages.keys():
+            print(k)
     else:
-        if len(args.query) == 0:
-            for k in pages.keys():
-                print(k)
+        if args.query[0] in pages.keys():
+            value = pages.get(args.query[0])
+            if type(value) is list:
+                for query in value:
+                    cmd += query
+                    cmd += " "
+            else: 
+                cmd += value
+
         else:
-            if args.query[0] in pages.keys():
-                value = pages.get(args.query[0])
-                if type(value) is list:
-                    for query in value:
-                        cmd += query
-                        cmd += " "
-                else: 
-                    cmd += value
+            search_query = "+".join(str(x) for x in args.query)
+            cmd += "https://duckduckgo.com/?q="+search_query
+            cmd += " "
+            cmd += "https://www.google.de/search?q="+search_query
 
-            else:
-                search_query = "+".join(str(x) for x in args.query)
-                cmd += "https://duckduckgo.com/?q="+search_query
-                cmd += " "
-                cmd += "https://www.google.de/search?q="+search_query
+        process = subprocess.Popen(cmd.split(), stdout=DEVNULL)
 
-            process = subprocess.Popen(cmd.split(), stdout=DEVNULL)
-    
 
 
 
