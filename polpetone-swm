@@ -69,7 +69,7 @@ if __name__ == "__main__":
             cmd += " "
             cmd += "https://www.google.de/search?q="+search_query
 
-        process = subprocess.Popen(cmd.split(), stdout=DEVNULL)
+        process = subprocess.Popen(cmd.split(), stdout=DEVNULL, stderr=DEVNULL)
 
 
 

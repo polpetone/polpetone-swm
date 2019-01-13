@@ -8,3 +8,5 @@ Easy handling of often used webpages and call them from shell
 ## Integration to your setup
 * make an alias or sim link in your preferred bin directory
 
+## How it works
+* all bookmarks a saved and get handled in a yaml file
