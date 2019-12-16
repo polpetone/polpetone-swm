@@ -19,12 +19,12 @@ INITIAL_WEBPAGES =  "github:\n" +\
 
 def read_pages(pages_file):
     with open(pages_file) as f:
-        pages = yaml.load(f)
+        pages = yaml.load(f, Loader=yaml.FullLoader)
     return pages
 
 def read_config(config_file):
     with open(config_file) as f:
-        config = yaml.load(f) 
+        config = yaml.load(f, Loader=yaml.FullLoader) 
     return config
 
 def create_config_if_not_exists():
